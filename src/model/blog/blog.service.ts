@@ -7,6 +7,17 @@ const createBlogIntoDB = async(blog : IBlog)=>{
     return result;
 }
 
+//* get all blog post
+const getAllBlogFromDB= async()=>{
+    const result = await BlogModel.find();
+    return result;
+}
+//* get single blog post
+const getSingleBlogFromDB =async(id: string)=>{
+    const result = await BlogModel.findById(id)
+    return result
+}
+
 //*update blog post
 const  updateBlogIntoDB = async(id : string, data : any )=>{
     const result = await BlogModel.findByIdAndUpdate(id,data, {
@@ -23,6 +34,8 @@ const deleteBlogFromDB = async(id: string)=>{
 
 export const BlogServices ={
     createBlogIntoDB,
+    getAllBlogFromDB,
+    getSingleBlogFromDB,
     updateBlogIntoDB,
     deleteBlogFromDB
 }

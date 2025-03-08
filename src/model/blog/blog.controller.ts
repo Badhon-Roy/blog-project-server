@@ -12,6 +12,29 @@ const createBlog = catchAsync(async (req, res)=>{
         data: result
     })
 })
+//* get all blog post 
+const getAllBlog = catchAsync(async(req,res)=>{
+    const result = await BlogServices.getAllBlogFromDB()
+    res.status(200).json({
+        success: true,
+        message: "Blogs fetched successfully",
+        statusCode: 200,
+        data: result
+    })
+})
+
+//* get single all blog post 
+const getSingleBlog = catchAsync(async(req,res)=>{
+    const {id} = req.params
+    const result = await BlogServices.getSingleBlogFromDB(id)
+    res.status(200).json({
+        success: true,
+        message: "Blogs fetched successfully",
+        statusCode: 200,
+        data: result
+    })
+})
+
 
 //*update blog
 const updateBlog = catchAsync(async(req, res)=>{
@@ -39,6 +62,8 @@ const deleteBlog = catchAsync(async(req, res)=>{
 
 export const BlogControllers = {
     createBlog,
+    getAllBlog,
+    getSingleBlog,
     deleteBlog,
     updateBlog
 }
