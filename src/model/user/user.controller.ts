@@ -15,13 +15,24 @@ const createUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     }
     const result = await UserServices.createUserIntoDB(user);
 
-    res.status(200).json({
+    res.status(201).json({
         success: true,
         message: "User register successfully",
+        statusCode: 201,
+        data: result
+    })
+})
+
+const getAllUser = catchAsync(async (req,res)=>{
+    const result = await UserServices.getAllUser();
+    res.status(200).json({
+        success: true,
+        message: "Users retrieved successfully",
         data: result
     })
 })
 
 export const UserControllers = {
     createUser,
+    getAllUser
 }

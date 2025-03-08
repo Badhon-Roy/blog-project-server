@@ -6,7 +6,7 @@ const globalErrorHandlers = (error : any, req: Request, res: Response, next: Nex
     res.status(status).json({
         success: true,
         message: message,
-        error
+        error,
     })
     return;
 }
