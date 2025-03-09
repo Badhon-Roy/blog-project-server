@@ -1,38 +1,73 @@
 import config from "../../config";
+import AppError from "../../errors/AppError";
 import User from "../user/user.model";
 import { ILoginUser } from "./auth.interface";
-import bcrypt from 'bcrypt';
 import jwt from "jsonwebtoken"
+import { createToken, verifyToken } from "./auth.utils";
 
 
-const loginUser = async(user : ILoginUser)=>{
+const loginUser = async(payload : ILoginUser)=>{
     
-    const isExitsUser = await User.findOne({email : user?.email})
+    const user = await User.isUserExistsByCustomEmail(payload?.email)
     //*check email
-    if(!isExitsUser){
-        throw new Error("User not found!")
+    if(!user){
+        throw new AppError(401, "This user not found!")
     }
 
-    const isMatchPassword = await bcrypt.compare(user?.password ,isExitsUser?.password)
+    //*check isBlocked
+    const isBlocked = user?.isBlocked
+    if(isBlocked){
+        throw new AppError(403, "This user is blocked!")
+    }
+
     //*check password
-    if(!isMatchPassword){
+    if(! await User.isMatchPassword(payload?.password, user?.password)){
         throw new Error("Password doesn't match!")
     }
 
     const jwtPayload = {
-        userId: isExitsUser?._id,
-        email : isExitsUser?.email,
-        role : isExitsUser?.role
+        email : user?.email,
+        role : user?.role
     }
     
-    const accessToken = jwt.sign(jwtPayload, config.jwt_access_token_secret as string , { expiresIn: '1d' })
-    const refreshToken = jwt.sign(jwtPayload, config.jwt_refresh_token_secret as string , { expiresIn: '1d' })
+    const accessToken = createToken(jwtPayload, config.jwt_access_token_secret as string, config.jwt_access_token_expires_in as string)
+    const refreshToken = createToken(jwtPayload, config.jwt_refresh_token_secret as string, config.jwt_refresh_token_expires_in as string)
     return {
         accessToken,
         refreshToken
     };
 }
 
+const refreshToken = async (token: string) => {
+    // checking if the given token is valid
+    const decoded = verifyToken(token, config.jwt_refresh_token_secret as string);
+  
+    const { email } = decoded;
+  
+    // checking if the user is exist
+    const user = await User.isUserExistsByCustomEmail(email);
+  
+    if (!user) {
+      throw new AppError(404, 'This user is not found !');
+    }
+  
+    const jwtPayload = {
+      email: user?.email,
+      role: user?.role,
+    };
+  
+    const accessToken = createToken(
+      jwtPayload,
+      config.jwt_access_token_secret as string,
+      config.jwt_access_token_expires_in as string,
+    );
+  
+    return {
+      accessToken
+    };
+  };
+
 export const AuthServices ={
-    loginUser
+    loginUser,
+    refreshToken
 }

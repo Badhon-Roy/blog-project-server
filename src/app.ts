@@ -1,12 +1,12 @@
 import express, { Application, Request, Response } from 'express';
 import cors from "cors"
 import router from './routes';
-import { Error } from 'mongoose';
-import { NextFunction } from 'express';
+import cookieParser from "cookie-parser"
 import globalErrorHandlers from './middlewares/globalErrorHandler';
 const app: Application = express();
 
 app.use(express.json());
+app.use(cookieParser())
 app.use(cors())
 
 //* application routes

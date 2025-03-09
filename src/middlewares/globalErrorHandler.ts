@@ -4,7 +4,7 @@ const globalErrorHandlers = (error : any, req: Request, res: Response, next: Nex
     const status =error?.statusCode || 500;
     const message = error?.message || "Something went wrong!"
     res.status(status).json({
-        success: true,
+        success: false,
         message: message,
         error,
     })

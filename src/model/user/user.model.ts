@@ -1,10 +1,10 @@
 import { model, Schema } from "mongoose";
-import { IUser } from "./user.interface";
+import { IUser, UserModel } from "./user.interface";
 import bcrypt from "bcrypt"
 import config from "../../config";
 
 
-const userSchema = new Schema<IUser>({
+const userSchema = new Schema<IUser , UserModel>({
     name: {
         type: String,
         required: true,
@@ -21,6 +21,7 @@ const userSchema = new Schema<IUser>({
         type: String,
         required: true,
         minlength: 6,
+        select : 0
     },
     role: {
         type: String,
@@ -53,5 +54,13 @@ userSchema.post('save', async function (doc, next) {
     next()
 })
 
-const User = model<IUser>('User', userSchema);
+userSchema.statics.isUserExistsByCustomEmail = async function (email : string){
+    return await User.findOne({email})
+}
+
+userSchema.statics.isMatchPassword = async function(plainTextPassword, hashPassword) {
+    return await bcrypt.compare(plainTextPassword ,hashPassword)
+}
+
+const User = model<IUser, UserModel>('User', userSchema);
 export default User;
