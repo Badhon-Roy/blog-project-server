@@ -3,6 +3,13 @@ import { blogSearchFields } from "./blog.constant";
 import { IBlog } from "./blog.interface";
 import BlogModel from "./blog.model";
 
+interface BlogQueryParams {
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  filter?: string;
+}
+
 //*create blog post
 const createBlogIntoDB = async(blog : IBlog)=>{
     const result = await BlogModel.create(blog)
@@ -10,24 +17,27 @@ const createBlogIntoDB = async(blog : IBlog)=>{
 }
 
 //* get all blog post
-const getAllBlogFromDB = async (
-    query: Record<string, unknown>,
-  ) => {
-    const blogQuery = new QueryBuilder(BlogModel.find()
-      .populate("author"), query)
-      .search(blogSearchFields)
-      .filter()
-      .sort()
-      .paginate()
-      .fields();
-  
-    const result = await blogQuery.modelQuery;
-    const meta = await blogQuery.countTotal();
-    return {
-      meta,
-      result,
-    };
-  };
+const getAllBlogFromDB = async ({ search, sortBy = "createdAt", sortOrder = "desc", filter }: BlogQueryParams) => {
+  let query: any = {};
+
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { content: { $regex: search, $options: "i" } }
+    ];
+  }
+
+  if (filter) {
+    query.author = filter;
+  }
+
+  const sortOptions: any = {};
+  sortOptions[sortBy] = sortOrder === "desc" ? -1 : 1;
+
+  // Fetch blogs and populate author details
+  return await BlogModel.find(query).populate("author").sort(sortOptions);
+};
+
   
 
 

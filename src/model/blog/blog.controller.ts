@@ -1,7 +1,10 @@
 import AppError from "../../errors/AppError";
 import catchAsync from "../../utils/catchAsync";
 import User from "../user/user.model";
+import BlogModel from "./blog.model";
 import { BlogServices } from "./blog.service";
+
+
 
 //*create blog
 const createBlog = catchAsync(async (req, res) => {
@@ -24,21 +27,27 @@ const createBlog = catchAsync(async (req, res) => {
 })
 //* get all blog post 
 const getAllBlog = catchAsync(async (req, res) => {
-    const result = await BlogServices.getAllBlogFromDB(
-        req.query
-    )
+    const { search, sortBy, sortOrder, filter } = req.query;
+
+    const blogs = await BlogServices.getAllBlogFromDB({
+        search: search as string,
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as "asc" | "desc",
+        filter: filter as string,
+    });
+
     res.status(200).json({
         success: true,
         message: "Blogs fetched successfully",
         statusCode: 200,
-        meta: result.meta,
-        data: result.result
-    })
-})
+        data: blogs,
+    });
+});
+
 
 //* get single all blog post 
 const getSingleBlog = catchAsync(async (req, res) => {
-    const { id } = req.params
+    const { id } = req.params;
     const result = await BlogServices.getSingleBlogFromDB(id)
     res.status(200).json({
         success: true,
@@ -51,8 +60,18 @@ const getSingleBlog = catchAsync(async (req, res) => {
 
 //*update blog
 const updateBlog = catchAsync(async (req, res) => {
-    const { id } = req.params
-    console.log(id);
+    const { id } = req.params;
+    const currentUser = await User.findOne({ email: req?.user?.email });
+    if (!currentUser) {
+        throw new AppError(401, "Unauthorized: User not found")
+    }
+    const blog = await BlogModel.findById(id)
+    if (!blog) {
+        throw new AppError(404, "Blog not found!")
+    }
+    if (blog.author.toString() !== currentUser._id.toString()) {
+        throw new AppError(403, "Forbidden: You are not the author of this blog")
+    }
     const result = await BlogServices.updateBlogIntoDB(id, req.body)
     res.status(200).json({
         success: true,
@@ -64,7 +83,19 @@ const updateBlog = catchAsync(async (req, res) => {
 
 //* delete blog
 const deleteBlog = catchAsync(async (req, res) => {
-    const { id } = req.params
+    const { id } = req.params;
+    const currentUser = await User.findOne({ email: req?.user?.email });
+    if (!currentUser) {
+        throw new AppError(401, "Unauthorized: User not found")
+    }
+    const blog = await BlogModel.findById(id)
+    if (!blog) {
+        throw new AppError(404, "Blog not found!")
+    }
+    if (blog.author.toString() !== currentUser._id.toString()) {
+        throw new AppError(403, "Forbidden: You are not the author of this blog")
+    }
+
     const result = await BlogServices.deleteBlogFromDB(id)
     res.status(200).json({
         success: true,
