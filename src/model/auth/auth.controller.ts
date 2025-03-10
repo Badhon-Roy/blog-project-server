@@ -13,7 +13,7 @@ const loginUser = catchAsync(async (req, res) => {
     res.status(200).json({
         message: 'Login successful',
         success: true,
-        statusCode : 201,
+        statusCode : 200,
         data: {
             accessToken : `Bearer ${accessToken}`,
         },
