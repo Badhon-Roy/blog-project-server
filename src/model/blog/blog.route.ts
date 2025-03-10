@@ -8,7 +8,7 @@ import { USER_ROLE } from "../user/user.constant";
 
 const router  = Router();
 
-router.post('/', auth(USER_ROLE.admin), validateRequest(blogValidation.createBlogPostSchemaValidation), BlogControllers.createBlog)
+router.post('/', auth(USER_ROLE.user), validateRequest(blogValidation.createBlogPostSchemaValidation), BlogControllers.createBlog)
 router.get('/', BlogControllers.getAllBlog)
 router.get('/:id', BlogControllers.getSingleBlog)
 router.patch('/:id', BlogControllers.updateBlog)

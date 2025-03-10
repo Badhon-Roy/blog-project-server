@@ -1,3 +1,5 @@
+import QueryBuilder from "../../builder/QueryBuilder";
+import { blogSearchFields } from "./blog.constant";
 import { IBlog } from "./blog.interface";
 import BlogModel from "./blog.model";
 
@@ -8,10 +10,27 @@ const createBlogIntoDB = async(blog : IBlog)=>{
 }
 
 //* get all blog post
-const getAllBlogFromDB= async()=>{
-    const result = await BlogModel.find();
-    return result;
-}
+const getAllBlogFromDB = async (
+    query: Record<string, unknown>,
+  ) => {
+    const blogQuery = new QueryBuilder(BlogModel.find()
+      .populate("author"), query)
+      .search(blogSearchFields)
+      .filter()
+      .sort()
+      .paginate()
+      .fields();
+  
+    const result = await blogQuery.modelQuery;
+    const meta = await blogQuery.countTotal();
+    return {
+      meta,
+      result,
+    };
+  };
+  
+
+
 //* get single blog post
 const getSingleBlogFromDB =async(id: string)=>{
     const result = await BlogModel.findById(id)
